@@ -16,7 +16,7 @@ func Part1() int64 {
 	computer.Memory[2] = 2
 
 	for !computer.Halted {
-		computer.Step()
+		computer.Step(0)
 	}
 
 	return computer.Memory[0]
@@ -32,7 +32,7 @@ func Part2() int {
 			computer.Memory[1] = int64(noun)
 			computer.Memory[2] = int64(verb)
 			for !computer.Halted {
-				computer.Step()
+				computer.Step(0)
 			}
 			if computer.Memory[0] == 19690720 {
 				return 100*noun + verb

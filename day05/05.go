@@ -10,7 +10,7 @@ func Part1() int64 {
 	computer := intcode.NewComputer(input, 0, false)
 
 	for !computer.Halted {
-		computer.Step()
+		computer.Step(1)
 	}
 
 	return computer.Memory[0]
