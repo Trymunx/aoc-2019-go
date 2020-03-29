@@ -1,4 +1,4 @@
-package day2
+package day02
 
 import (
 	"aoc/intcode"
@@ -6,7 +6,7 @@ import (
 
 // Part1 calculates the answer to day 2 part 1
 func Part1() int64 {
-	input := intcode.LoadFromFile("day2/input.txt")
+	input := intcode.LoadFromFile("day02/input.txt")
 
 	// Initialise an incode computer with pointer at position 0
 	computer := intcode.NewComputer(input, 0, false)
@@ -24,7 +24,7 @@ func Part1() int64 {
 
 // Part2 calculates the answer to day 2 part 2
 func Part2() int {
-	input := intcode.LoadFromFile("day2/input.txt")
+	input := intcode.LoadFromFile("day02/input.txt")
 
 	for noun := 0; noun < 99; noun++ {
 		for verb := 0; verb < 99; verb++ {

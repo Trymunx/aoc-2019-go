@@ -1,4 +1,4 @@
-package day1
+package day01
 
 import (
 	"bufio"
@@ -8,7 +8,7 @@ import (
 )
 
 func loadInput() []int64 {
-	inputFile, err := os.Open("day1/input.txt")
+	inputFile, err := os.Open("day01/input.txt")
 	if err != nil {
 		log.Fatal(err)
 	}
