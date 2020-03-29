@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"fmt"
 	"log"
+	"math"
 	"os"
 	"strconv"
 
@@ -102,23 +103,33 @@ type Opcode interface {
 
 // ToOpcode turns a string into an opcode
 func ToOpcode(val int64) (Opcode, error) {
-	switch val {
+	code := val % 100
+
+	var argModes []int64
+	digits := math.Trunc(math.Log10(float64(val))) - 2
+	for i := digits; i >= 0; i-- {
+		divisor := int64(math.Pow(10, digits-i+2))
+		argModes[int(i)] = ((val / divisor) % 10)
+	}
+	fmt.Println(argModes)
+
+	switch code {
 	case 1:
 		return &Op1{
 			ArgLen:   3,
-			Instant:  false,
+			ArgModes: argModes,
 			Relative: false,
 		}, nil
 	case 2:
 		return &Op2{
 			ArgLen:   3,
-			Instant:  false,
+			ArgModes: argModes,
 			Relative: false,
 		}, nil
 	case 99:
 		return &Op99{
 			ArgLen:   0,
-			Instant:  false,
+			ArgModes: argModes,
 			Relative: false,
 		}, nil
 	default:

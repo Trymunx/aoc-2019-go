@@ -7,7 +7,7 @@ import (
 // Op1 is the add operation
 type Op1 struct {
 	ArgLen   int64
-	Instant  bool
+	ArgModes []int64
 	Relative bool
 }
 
@@ -28,7 +28,7 @@ func (op *Op1) Compute(ptr int64, memory []int64) error {
 // Op2 is the add operation
 type Op2 struct {
 	ArgLen   int64
-	Instant  bool
+	ArgModes []int64
 	Relative bool
 }
 
@@ -49,7 +49,7 @@ func (op *Op2) Compute(ptr int64, memory []int64) error {
 // Op99 is the add operation
 type Op99 struct {
 	ArgLen   int64
-	Instant  bool
+	ArgModes []int64
 	Relative bool
 }
 
