@@ -109,29 +109,16 @@ func ToOpcode(val int64) (Opcode, error) {
 	digits := math.Trunc(math.Log10(float64(val))) - 2
 	for i := digits; i >= 0; i-- {
 		divisor := int64(math.Pow(10, digits-i+2))
-		argModes[int(i)] = ((val / divisor) % 10)
+		argModes = append(argModes, (val/divisor)%10)
 	}
-	fmt.Println(argModes)
 
 	switch code {
 	case 1:
-		return &Op1{
-			ArgLen:   3,
-			ArgModes: argModes,
-			Relative: false,
-		}, nil
+		return NewOp1(3, argModes), nil
 	case 2:
-		return &Op2{
-			ArgLen:   3,
-			ArgModes: argModes,
-			Relative: false,
-		}, nil
+		return NewOp2(3, argModes), nil
 	case 99:
-		return &Op99{
-			ArgLen:   0,
-			ArgModes: argModes,
-			Relative: false,
-		}, nil
+		return NewOp99(), nil
 	default:
 		return nil, fmt.Errorf("Error: expected opcode got: %v: %T", val, val)
 	}
