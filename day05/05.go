@@ -1,6 +1,9 @@
 package day05
 
-import "aoc/intcode"
+import (
+	"aoc/intcode"
+	"fmt"
+)
 
 // Part1 calculates the answer to day 5 part 1
 func Part1() int64 {
@@ -9,9 +12,19 @@ func Part1() int64 {
 	// Initialise an incode computer with pointer at position 0
 	computer := intcode.NewComputer(input, 0, false)
 
+	var diagnosticCode int64
+
 	for !computer.Halted {
-		computer.Step(1)
+		output := computer.Step(1)
+		if output == -1 {
+			fmt.Println("Received error code from computer.Step(), printing state:")
+			fmt.Println(intcode.PrintStatus(computer))
+			return -1
+		}
+		if output != 0 && output != -1 {
+			diagnosticCode = output
+		}
 	}
 
-	return computer.Memory[0]
+	return diagnosticCode
 }
