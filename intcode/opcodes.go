@@ -20,8 +20,8 @@ func NewOp1(argLen int64, argModes []int64) *Op1 {
 
 // Compute adds two numbers together and stores them
 func (op *Op1) Compute(pc *Computer, input int64) (int64, error) {
-	if int64(len(pc.Memory)) < pc.ptr+op.ArgLen {
-		return 0, fmt.Errorf("Expected %v chars after ptr position: %v but memory length is %v", op.ArgLen, pc.ptr, len(pc.Memory))
+	if err := checkMemoryRange(pc, op.ArgLen); err != nil {
+		return 0, err
 	}
 	args := calculateArgModes(op.ArgLen-1, op.ArgModes, pc.ptr, pc.Memory)
 	pc.Memory[pc.Memory[pc.ptr+3]] = args[0] + args[1]
@@ -45,8 +45,8 @@ func NewOp2(argLen int64, argModes []int64) *Op2 {
 
 // Compute adds two numbers together and stores them
 func (op *Op2) Compute(pc *Computer, input int64) (int64, error) {
-	if int64(len(pc.Memory)) < pc.ptr+op.ArgLen {
-		return 0, fmt.Errorf("Expected %v chars after ptr position: %v but memory length is %v", op.ArgLen, pc.ptr, len(pc.Memory))
+	if err := checkMemoryRange(pc, op.ArgLen); err != nil {
+		return 0, err
 	}
 	args := calculateArgModes(op.ArgLen-1, op.ArgModes, pc.ptr, pc.Memory)
 	pc.Memory[pc.Memory[pc.ptr+3]] = args[0] * args[1]
@@ -68,8 +68,8 @@ func NewOp3(argLen int64) *Op3 {
 
 // Compute inputs a number in a given position
 func (op *Op3) Compute(pc *Computer, input int64) (int64, error) {
-	if int64(len(pc.Memory)) < pc.ptr+op.ArgLen {
-		return 0, fmt.Errorf("Expected %v chars after ptr position: %v but memory length is %v", op.ArgLen, pc.ptr, len(pc.Memory))
+	if err := checkMemoryRange(pc, op.ArgLen); err != nil {
+		return 0, err
 	}
 	pc.Memory[pc.Memory[pc.ptr+1]] = input
 	pc.ptr += op.ArgLen + 1
@@ -92,8 +92,8 @@ func NewOp4(argLen int64, argModes []int64) *Op4 {
 
 // Compute outputs a number from a position or value
 func (op *Op4) Compute(pc *Computer, input int64) (int64, error) {
-	if int64(len(pc.Memory)) < pc.ptr+op.ArgLen {
-		return 0, fmt.Errorf("Expected %v chars after ptr position: %v but memory length is %v", op.ArgLen, pc.ptr, len(pc.Memory))
+	if err := checkMemoryRange(pc, op.ArgLen); err != nil {
+		return 0, err
 	}
 	args := calculateArgModes(op.ArgLen, op.ArgModes, pc.ptr, pc.Memory)
 	pc.ptr += op.ArgLen + 1
@@ -116,8 +116,8 @@ func NewOp5(argLen int64, argModes []int64) *Op5 {
 
 // Compute jumps the pointer to the new position
 func (op *Op5) Compute(pc *Computer, input int64) (int64, error) {
-	if int64(len(pc.Memory)) < pc.ptr+op.ArgLen {
-		return 0, fmt.Errorf("Expected %v chars after ptr position: %v but memory length is %v", op.ArgLen, pc.ptr, len(pc.Memory))
+	if err := checkMemoryRange(pc, op.ArgLen); err != nil {
+		return 0, err
 	}
 	args := calculateArgModes(op.ArgLen, op.ArgModes, pc.ptr, pc.Memory)
 	if args[0] != 0 {
@@ -144,8 +144,8 @@ func NewOp6(argLen int64, argModes []int64) *Op6 {
 
 // Compute jumps the pointer to the new position
 func (op *Op6) Compute(pc *Computer, input int64) (int64, error) {
-	if int64(len(pc.Memory)) < pc.ptr+op.ArgLen {
-		return 0, fmt.Errorf("Expected %v chars after ptr position: %v but memory length is %v", op.ArgLen, pc.ptr, len(pc.Memory))
+	if err := checkMemoryRange(pc, op.ArgLen); err != nil {
+		return 0, err
 	}
 	args := calculateArgModes(op.ArgLen, op.ArgModes, pc.ptr, pc.Memory)
 	if args[0] == 0 {
@@ -153,6 +153,35 @@ func (op *Op6) Compute(pc *Computer, input int64) (int64, error) {
 	} else {
 		pc.ptr += op.ArgLen + 1
 	}
+	return 0, nil
+}
+
+// Op7 determines if an instruction is less than another
+type Op7 struct {
+	ArgLen   int64
+	ArgModes []int64
+}
+
+// NewOp7 returns an instance of the less than operation
+func NewOp7(argLen int64, argModes []int64) *Op7 {
+	return &Op7{
+		ArgLen:   argLen,
+		ArgModes: padMissingArgModes(argLen, argModes),
+	}
+}
+
+// Compute sets its write pointer to 1 if arg 0 is less than arg 1
+func (op *Op7) Compute(pc *Computer, input int64) (int64, error) {
+	if err := checkMemoryRange(pc, op.ArgLen); err != nil {
+		return 0, err
+	}
+	args := calculateArgModes(op.ArgLen, op.ArgModes, pc.ptr, pc.Memory)
+	if args[0] < args[1] {
+		pc.Memory[pc.Memory[pc.ptr+3]] = 1
+	} else {
+		pc.Memory[pc.Memory[pc.ptr+3]] = 0
+	}
+	pc.ptr += op.ArgLen + 1
 	return 0, nil
 }
 
@@ -170,6 +199,13 @@ func NewOp99() *Op99 {
 func (op *Op99) Compute(pc *Computer, input int64) (int64, error) {
 	pc.Halted = true
 	return 0, nil
+}
+
+func checkMemoryRange(pc *Computer, argLen int64) error {
+	if int64(len(pc.Memory)) < pc.ptr+argLen {
+		return fmt.Errorf("Expected %v chars after ptr position: %v but memory length is %v", argLen, pc.ptr, len(pc.Memory))
+	}
+	return nil
 }
 
 func calculateArgModes(argLen int64, argModes []int64, ptr int64, memory []int64) []int64 {
