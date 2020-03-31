@@ -156,7 +156,7 @@ func (op *Op6) Compute(pc *Computer, input int64) (int64, error) {
 	return 0, nil
 }
 
-// Op7 determines if an instruction is less than another
+// Op7 is the less than operator
 type Op7 struct {
 	ArgLen   int64
 	ArgModes []int64
@@ -177,6 +177,35 @@ func (op *Op7) Compute(pc *Computer, input int64) (int64, error) {
 	}
 	args := calculateArgModes(op.ArgLen, op.ArgModes, pc.ptr, pc.Memory)
 	if args[0] < args[1] {
+		pc.Memory[pc.Memory[pc.ptr+3]] = 1
+	} else {
+		pc.Memory[pc.Memory[pc.ptr+3]] = 0
+	}
+	pc.ptr += op.ArgLen + 1
+	return 0, nil
+}
+
+// Op8 is the equals operator
+type Op8 struct {
+	ArgLen   int64
+	ArgModes []int64
+}
+
+// NewOp8 returns an instance of the equals operation
+func NewOp8(argLen int64, argModes []int64) *Op8 {
+	return &Op8{
+		ArgLen:   argLen,
+		ArgModes: padMissingArgModes(argLen, argModes),
+	}
+}
+
+// Compute sets its write pointer to 1 if arg 0 equals arg 1
+func (op *Op8) Compute(pc *Computer, input int64) (int64, error) {
+	if err := checkMemoryRange(pc, op.ArgLen); err != nil {
+		return 0, err
+	}
+	args := calculateArgModes(op.ArgLen, op.ArgModes, pc.ptr, pc.Memory)
+	if args[0] == args[1] {
 		pc.Memory[pc.Memory[pc.ptr+3]] = 1
 	} else {
 		pc.Memory[pc.Memory[pc.ptr+3]] = 0

@@ -128,6 +128,8 @@ func ToOpcode(val int64) (Opcode, error) {
 		return NewOp6(2, argModes), nil
 	case 7:
 		return NewOp7(3, argModes), nil
+	case 8:
+		return NewOp8(3, argModes), nil
 	case 99:
 		return NewOp99(), nil
 	default:
