@@ -100,22 +100,6 @@ func (op *Op4) Compute(pc *Computer, input int64) (int64, error) {
 	return args[0], nil
 }
 
-// Op99 is the halt operation
-type Op99 struct {
-	ArgLen int64
-}
-
-// NewOp99 returns an instance of the halt instruction
-func NewOp99() *Op99 {
-	return &Op99{0}
-}
-
-// Compute terminates the program
-func (op *Op99) Compute(pc *Computer, input int64) (int64, error) {
-	pc.Halted = true
-	return 0, nil
-}
-
 // Op5 jumps the pointer if first arg is non-zero
 type Op5 struct {
 	ArgLen   int64
@@ -141,6 +125,50 @@ func (op *Op5) Compute(pc *Computer, input int64) (int64, error) {
 	} else {
 		pc.ptr += op.ArgLen + 1
 	}
+	return 0, nil
+}
+
+// Op6 jumps the pointer if first arg is zero
+type Op6 struct {
+	ArgLen   int64
+	ArgModes []int64
+}
+
+// NewOp6 returns an instance of the jump if true operation
+func NewOp6(argLen int64, argModes []int64) *Op6 {
+	return &Op6{
+		ArgLen:   argLen,
+		ArgModes: padMissingArgModes(argLen, argModes),
+	}
+}
+
+// Compute jumps the pointer to the new position
+func (op *Op6) Compute(pc *Computer, input int64) (int64, error) {
+	if int64(len(pc.Memory)) < pc.ptr+op.ArgLen {
+		return 0, fmt.Errorf("Expected %v chars after ptr position: %v but memory length is %v", op.ArgLen, pc.ptr, len(pc.Memory))
+	}
+	args := calculateArgModes(op.ArgLen, op.ArgModes, pc.ptr, pc.Memory)
+	if args[0] == 0 {
+		pc.ptr = args[1]
+	} else {
+		pc.ptr += op.ArgLen + 1
+	}
+	return 0, nil
+}
+
+// Op99 is the halt operation
+type Op99 struct {
+	ArgLen int64
+}
+
+// NewOp99 returns an instance of the halt instruction
+func NewOp99() *Op99 {
+	return &Op99{0}
+}
+
+// Compute terminates the program
+func (op *Op99) Compute(pc *Computer, input int64) (int64, error) {
+	pc.Halted = true
 	return 0, nil
 }
 
