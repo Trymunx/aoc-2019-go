@@ -28,3 +28,27 @@ func Part1() int64 {
 
 	return diagnosticCode
 }
+
+// Part2 calculates the answer to day 5 part 2
+func Part2() int64 {
+	input := intcode.LoadFromFile("day05/input.txt")
+
+	// Initialise an incode computer with pointer at position 0
+	computer := intcode.NewComputer(input, 0, false)
+
+	var diagnosticCode int64
+
+	for !computer.Halted {
+		output := computer.Step(5)
+		if output == -1 {
+			fmt.Println("Received error code from computer.Step(), printing state:")
+			fmt.Println(intcode.PrintStatus(computer))
+			return -1
+		}
+		if output != 0 && output != -1 {
+			diagnosticCode = output
+		}
+	}
+
+	return diagnosticCode
+}
