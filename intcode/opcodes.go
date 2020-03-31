@@ -18,18 +18,14 @@ func NewOp1(argLen int64, argModes []int64) *Op1 {
 	}
 }
 
-// NumberToNext gives the number to jump to next instruction
-func (op *Op1) NumberToNext() int64 {
-	return op.ArgLen + 1
-}
-
 // Compute adds two numbers together and stores them
-func (op *Op1) Compute(ptr int64, memory []int64, input int64) (int64, error) {
-	if int64(len(memory)) < ptr+op.ArgLen {
-		return 0, fmt.Errorf("Expected %v chars after ptr position: %v but memory length is %v", op.ArgLen, ptr, len(memory))
+func (op *Op1) Compute(pc *Computer, input int64) (int64, error) {
+	if int64(len(pc.Memory)) < pc.ptr+op.ArgLen {
+		return 0, fmt.Errorf("Expected %v chars after ptr position: %v but memory length is %v", op.ArgLen, pc.ptr, len(pc.Memory))
 	}
-	args := calculateArgModes(op.ArgLen-1, op.ArgModes, ptr, memory)
-	memory[memory[ptr+3]] = args[0] + args[1]
+	args := calculateArgModes(op.ArgLen-1, op.ArgModes, pc.ptr, pc.Memory)
+	pc.Memory[pc.Memory[pc.ptr+3]] = args[0] + args[1]
+	pc.ptr += op.ArgLen + 1
 	return 0, nil
 }
 
@@ -47,18 +43,14 @@ func NewOp2(argLen int64, argModes []int64) *Op2 {
 	}
 }
 
-// NumberToNext gives the number to jump to next instruction
-func (op *Op2) NumberToNext() int64 {
-	return op.ArgLen + 1
-}
-
 // Compute adds two numbers together and stores them
-func (op *Op2) Compute(ptr int64, memory []int64, input int64) (int64, error) {
-	if int64(len(memory)) < ptr+op.ArgLen {
-		return 0, fmt.Errorf("Expected %v chars after ptr position: %v but memory length is %v", op.ArgLen, ptr, len(memory))
+func (op *Op2) Compute(pc *Computer, input int64) (int64, error) {
+	if int64(len(pc.Memory)) < pc.ptr+op.ArgLen {
+		return 0, fmt.Errorf("Expected %v chars after ptr position: %v but memory length is %v", op.ArgLen, pc.ptr, len(pc.Memory))
 	}
-	args := calculateArgModes(op.ArgLen-1, op.ArgModes, ptr, memory)
-	memory[memory[ptr+3]] = args[0] * args[1]
+	args := calculateArgModes(op.ArgLen-1, op.ArgModes, pc.ptr, pc.Memory)
+	pc.Memory[pc.Memory[pc.ptr+3]] = args[0] * args[1]
+	pc.ptr += op.ArgLen + 1
 	return 0, nil
 }
 
@@ -74,17 +66,13 @@ func NewOp3(argLen int64) *Op3 {
 	}
 }
 
-// NumberToNext gives the number to jump to next instruction
-func (op *Op3) NumberToNext() int64 {
-	return op.ArgLen + 1
-}
-
 // Compute inputs a number in a given position
-func (op *Op3) Compute(ptr int64, memory []int64, input int64) (int64, error) {
-	if int64(len(memory)) < ptr+op.ArgLen {
-		return 0, fmt.Errorf("Expected %v chars after ptr position: %v but memory length is %v", op.ArgLen, ptr, len(memory))
+func (op *Op3) Compute(pc *Computer, input int64) (int64, error) {
+	if int64(len(pc.Memory)) < pc.ptr+op.ArgLen {
+		return 0, fmt.Errorf("Expected %v chars after ptr position: %v but memory length is %v", op.ArgLen, pc.ptr, len(pc.Memory))
 	}
-	memory[memory[ptr+1]] = input
+	pc.Memory[pc.Memory[pc.ptr+1]] = input
+	pc.ptr += op.ArgLen + 1
 	return 0, nil
 }
 
@@ -102,17 +90,13 @@ func NewOp4(argLen int64, argModes []int64) *Op4 {
 	}
 }
 
-// NumberToNext gives the number to jump to next instruction
-func (op *Op4) NumberToNext() int64 {
-	return op.ArgLen + 1
-}
-
 // Compute outputs a number from a position or value
-func (op *Op4) Compute(ptr int64, memory []int64, input int64) (int64, error) {
-	if int64(len(memory)) < ptr+op.ArgLen {
-		return 0, fmt.Errorf("Expected %v chars after ptr position: %v but memory length is %v", op.ArgLen, ptr, len(memory))
+func (op *Op4) Compute(pc *Computer, input int64) (int64, error) {
+	if int64(len(pc.Memory)) < pc.ptr+op.ArgLen {
+		return 0, fmt.Errorf("Expected %v chars after ptr position: %v but memory length is %v", op.ArgLen, pc.ptr, len(pc.Memory))
 	}
-	args := calculateArgModes(op.ArgLen, op.ArgModes, ptr, memory)
+	args := calculateArgModes(op.ArgLen, op.ArgModes, pc.ptr, pc.Memory)
+	pc.ptr += op.ArgLen + 1
 	return args[0], nil
 }
 
@@ -126,22 +110,38 @@ func NewOp99() *Op99 {
 	return &Op99{0}
 }
 
-// NumberToNext gives the number to jump to next instruction
-func (op *Op99) NumberToNext() int64 {
-	return op.ArgLen
-}
-
 // Compute terminates the program
-func (op *Op99) Compute(ptr int64, memory []int64, input int64) (int64, error) {
+func (op *Op99) Compute(pc *Computer, input int64) (int64, error) {
+	pc.Halted = true
 	return 0, nil
 }
 
-func padMissingArgModes(argLen int64, argModes []int64) []int64 {
-	missing := argLen - int64(len(argModes))
-	if missing > 0 {
-		return append(argModes, make([]int64, missing)...)
+// Op5 jumps the pointer if first arg is non-zero
+type Op5 struct {
+	ArgLen   int64
+	ArgModes []int64
+}
+
+// NewOp5 returns an instance of the jump if true operation
+func NewOp5(argLen int64, argModes []int64) *Op5 {
+	return &Op5{
+		ArgLen:   argLen,
+		ArgModes: padMissingArgModes(argLen, argModes),
 	}
-	return argModes
+}
+
+// Compute jumps the pointer to the new position
+func (op *Op5) Compute(pc *Computer, input int64) (int64, error) {
+	if int64(len(pc.Memory)) < pc.ptr+op.ArgLen {
+		return 0, fmt.Errorf("Expected %v chars after ptr position: %v but memory length is %v", op.ArgLen, pc.ptr, len(pc.Memory))
+	}
+	args := calculateArgModes(op.ArgLen, op.ArgModes, pc.ptr, pc.Memory)
+	if args[0] != 0 {
+		pc.ptr = args[1]
+	} else {
+		pc.ptr += op.ArgLen + 1
+	}
+	return 0, nil
 }
 
 func calculateArgModes(argLen int64, argModes []int64, ptr int64, memory []int64) []int64 {
@@ -154,4 +154,12 @@ func calculateArgModes(argLen int64, argModes []int64, ptr int64, memory []int64
 		}
 	}
 	return args
+}
+
+func padMissingArgModes(argLen int64, argModes []int64) []int64 {
+	missing := argLen - int64(len(argModes))
+	if missing > 0 {
+		return append(argModes, make([]int64, missing)...)
+	}
+	return argModes
 }

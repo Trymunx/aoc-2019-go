@@ -65,10 +65,10 @@ func NewComputer(memory []int64, ptr int64, halted bool) *Computer {
 }
 
 // Step does the next computation and moves the pointer forward.
-// It returns whether the program should halt
+// It returns the output of the step computation, or -1 on error.
 func (pc *Computer) Step(input int64) int64 {
 	if pc.Halted {
-		return -1
+		return 0
 	}
 	if pc.ptr >= int64(len(pc.Memory)) || pc.ptr < 0 {
 		fmt.Println(fmt.Errorf("Pointer out of range: %v", pc.ptr))
@@ -81,24 +81,25 @@ func (pc *Computer) Step(input int64) int64 {
 		pc.Halted = true
 		return -1
 	}
-	output, err := opcode.Compute(pc.ptr, pc.Memory, input)
+	output, err := opcode.Compute(pc, input)
 	if err != nil {
 		fmt.Println(errors.Wrap(err, "failed to compute opcode"))
 		pc.Halted = true
 		return -1
 	}
-	if opcode.NumberToNext() == 0 {
-		pc.Halted = true
-		return output
-	}
-	pc.ptr += opcode.NumberToNext()
+	// if opcode.NumberToNext() == 0 {
+	// 	pc.Halted = true
+	// 	return output
+	// }
+	// pc.ptr += opcode.NumberToNext()
 	return output
 }
 
 // Opcode is an instruction for an intcode computer
 type Opcode interface {
-	NumberToNext() int64
-	Compute(ptr int64, memory []int64, input int64) (int64, error)
+	// NumberToNext() int64
+	Compute(pc *Computer, input int64) (int64, error)
+	// Compute(ptr int64, memory []int64, input int64) (int64, error)
 }
 
 // ToOpcode turns a string into an opcode
@@ -121,6 +122,8 @@ func ToOpcode(val int64) (Opcode, error) {
 		return NewOp3(1), nil
 	case 4:
 		return NewOp4(1, argModes), nil
+	case 5:
+		return NewOp5(2, argModes), nil
 	case 99:
 		return NewOp99(), nil
 	default:
