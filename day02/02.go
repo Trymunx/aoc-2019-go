@@ -23,14 +23,14 @@ func Part1() int64 {
 }
 
 // Part2 calculates the answer to day 2 part 2
-func Part2() int {
+func Part2() int64 {
 	input := intcode.LoadFromFile("day02/input.txt")
 
-	for noun := 0; noun < 99; noun++ {
-		for verb := 0; verb < 99; verb++ {
+	for noun := int64(0); noun < 99; noun++ {
+		for verb := int64(0); verb < 99; verb++ {
 			computer := intcode.NewComputer(append([]int64{}, input...))
-			computer.Memory[1] = int64(noun)
-			computer.Memory[2] = int64(verb)
+			computer.Memory[1] = noun
+			computer.Memory[2] = verb
 			for !computer.Halted {
 				computer.Step(0)
 			}

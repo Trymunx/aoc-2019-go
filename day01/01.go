@@ -29,6 +29,7 @@ func loadInput() []int64 {
 	return input
 }
 
+// Part1 calculates the answer to day 1 part 1
 func Part1() int64 {
 	input := loadInput()
 	var output int64
@@ -39,6 +40,7 @@ func Part1() int64 {
 	return output
 }
 
+// Part2 calculates the answer to day 1 part 2
 func Part2() int64 {
 	input := loadInput()
 	var output int64
