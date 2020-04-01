@@ -19,5 +19,6 @@ func main() {
 	fmt.Printf("day 05 part 2: %v\n", day05.Part2())
 
 	fmt.Printf("day 07 part 1: %v\n", day07.Part1())
+	fmt.Printf("day 07 part 2: %v\n", day07.Part2())
 	return
 }

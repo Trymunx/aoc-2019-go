@@ -15,7 +15,7 @@ func Part1() int64 {
 	var diagnosticCode int64
 
 	for !computer.Halted {
-		output := computer.Step(1)
+		output, _ := computer.Step(1)
 		if output == -1 {
 			fmt.Println("Received error code from computer.Step(), printing state:")
 			fmt.Println(intcode.PrintStatus(computer))
@@ -39,7 +39,7 @@ func Part2() int64 {
 	var diagnosticCode int64
 
 	for !computer.Halted {
-		output := computer.Step(5)
+		output, _ := computer.Step(5)
 		if output == -1 {
 			fmt.Println("Received error code from computer.Step(), printing state:")
 			fmt.Println(intcode.PrintStatus(computer))

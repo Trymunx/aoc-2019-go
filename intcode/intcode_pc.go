@@ -64,42 +64,39 @@ func NewComputer(memory []int64) *Computer {
 	return &Computer{memory, 0, false}
 }
 
-// Step does the next computation and moves the pointer forward.
-// It returns the output of the step computation, or -1 on error.
-func (pc *Computer) Step(input int64) int64 {
+// Step does the next computation and moves the pointer forward.  It returns
+// the output of the step computation or -1 on error, as well as whether the
+// output is valid output or just the zero value.
+func (pc *Computer) Step(input int64) (int64, bool) {
 	if pc.Halted {
-		return 0
+		return 0, false
 	}
 	if pc.ptr >= int64(len(pc.Memory)) || pc.ptr < 0 {
 		fmt.Println(fmt.Errorf("Pointer out of range: %v", pc.ptr))
 		pc.Halted = true
-		return -1
+		return -1, false
 	}
 	opcode, err := ToOpcode(pc.Memory[pc.ptr])
 	if err != nil {
 		fmt.Println(errors.Wrapf(err, "pointer: %v", pc.ptr))
 		pc.Halted = true
-		return -1
+		return -1, false
 	}
-	output, err := opcode.Compute(pc, input)
+	output, ok, err := opcode.Compute(pc, input)
 	if err != nil {
 		fmt.Println(errors.Wrap(err, "failed to compute opcode"))
 		pc.Halted = true
-		return -1
+		return -1, false
 	}
-	// if opcode.NumberToNext() == 0 {
-	// 	pc.Halted = true
-	// 	return output
-	// }
-	// pc.ptr += opcode.NumberToNext()
-	return output
+	return output, ok
 }
 
 // Opcode is an instruction for an intcode computer
 type Opcode interface {
-	// NumberToNext() int64
-	Compute(pc *Computer, input int64) (int64, error)
-	// Compute(ptr int64, memory []int64, input int64) (int64, error)
+	// Compute does the operation indicated by the opcode and advances the
+	// pointer.  It returns the output or 0, a boolean to say whether or not that
+	// output is valid or nil, and a possible error.
+	Compute(pc *Computer, input int64) (int64, bool, error)
 }
 
 // ToOpcode turns a string into an opcode

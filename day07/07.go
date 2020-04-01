@@ -27,7 +27,7 @@ func Part1() int64 {
 		var loopOutputSignal int64
 		for _, pc := range pcs {
 			for !pc.Halted {
-				output := pc.Step(loopOutputSignal)
+				output, _ := pc.Step(loopOutputSignal)
 				if output == -1 {
 					fmt.Println("Received error code from computer.Step(), printing state:")
 					fmt.Println(intcode.PrintStatus(pc))
@@ -39,6 +39,54 @@ func Part1() int64 {
 		}
 		if loopOutputSignal > finalOutput {
 			finalOutput = loopOutputSignal
+		}
+	}
+
+	return finalOutput
+}
+
+// Part2 calculates the answer to day 7 part 2
+func Part2() int64 {
+	input := intcode.LoadFromFile("day07/input.txt")
+	permutations := calculatePermutations()
+
+	var finalOutput int64
+	// Input for the first instruction, the phase setting from 0 to 4
+	for _, permutation := range permutations {
+		pcs := make([]*intcode.Computer, 5)
+		for i := range pcs {
+			pcs[i] = intcode.NewComputer(append([]int64{}, input...))
+		}
+		for i, pc := range pcs {
+			pc.Step(permutation[i] + 5)
+		}
+
+		var loopInputSignal int64
+		var loopOutputSignal int64
+		finished := false
+		for !finished {
+			for _, pc := range pcs {
+				loopOutputSignal = 0
+				hasOutput := false
+				// continue running until the pc outputs something, then pass it on
+				for !hasOutput && !pc.Halted {
+					output, ok := pc.Step(loopInputSignal)
+					if output == -1 {
+						fmt.Println("Received error code from computer.Step(), printing state:")
+						fmt.Println(intcode.PrintStatus(pc))
+						return -1
+					}
+					if ok {
+						hasOutput = ok
+						loopOutputSignal = output
+					}
+				}
+				loopInputSignal = loopOutputSignal
+				finished = pc.Halted
+			}
+			if loopOutputSignal > finalOutput {
+				finalOutput = loopOutputSignal
+			}
 		}
 	}
 

@@ -19,14 +19,14 @@ func NewOp1(argLen int64, argModes []int64) *Op1 {
 }
 
 // Compute adds two numbers together and stores them
-func (op *Op1) Compute(pc *Computer, input int64) (int64, error) {
+func (op *Op1) Compute(pc *Computer, input int64) (int64, bool, error) {
 	if err := checkMemoryRange(pc, op.ArgLen); err != nil {
-		return 0, err
+		return 0, false, err
 	}
 	args := calculateArgModes(op.ArgLen-1, op.ArgModes, pc.ptr, pc.Memory)
 	pc.Memory[pc.Memory[pc.ptr+3]] = args[0] + args[1]
 	pc.ptr += op.ArgLen + 1
-	return 0, nil
+	return 0, false, nil
 }
 
 // Op2 is the multiply operation
@@ -44,14 +44,14 @@ func NewOp2(argLen int64, argModes []int64) *Op2 {
 }
 
 // Compute adds two numbers together and stores them
-func (op *Op2) Compute(pc *Computer, input int64) (int64, error) {
+func (op *Op2) Compute(pc *Computer, input int64) (int64, bool, error) {
 	if err := checkMemoryRange(pc, op.ArgLen); err != nil {
-		return 0, err
+		return 0, false, err
 	}
 	args := calculateArgModes(op.ArgLen-1, op.ArgModes, pc.ptr, pc.Memory)
 	pc.Memory[pc.Memory[pc.ptr+3]] = args[0] * args[1]
 	pc.ptr += op.ArgLen + 1
-	return 0, nil
+	return 0, false, nil
 }
 
 // Op3 saves an input into a given position in memory
@@ -67,13 +67,13 @@ func NewOp3(argLen int64) *Op3 {
 }
 
 // Compute inputs a number in a given position
-func (op *Op3) Compute(pc *Computer, input int64) (int64, error) {
+func (op *Op3) Compute(pc *Computer, input int64) (int64, bool, error) {
 	if err := checkMemoryRange(pc, op.ArgLen); err != nil {
-		return 0, err
+		return 0, false, err
 	}
 	pc.Memory[pc.Memory[pc.ptr+1]] = input
 	pc.ptr += op.ArgLen + 1
-	return 0, nil
+	return 0, false, nil
 }
 
 // Op4 outputs the value of its argument
@@ -91,13 +91,13 @@ func NewOp4(argLen int64, argModes []int64) *Op4 {
 }
 
 // Compute outputs a number from a position or value
-func (op *Op4) Compute(pc *Computer, input int64) (int64, error) {
+func (op *Op4) Compute(pc *Computer, input int64) (int64, bool, error) {
 	if err := checkMemoryRange(pc, op.ArgLen); err != nil {
-		return 0, err
+		return 0, false, err
 	}
 	args := calculateArgModes(op.ArgLen, op.ArgModes, pc.ptr, pc.Memory)
 	pc.ptr += op.ArgLen + 1
-	return args[0], nil
+	return args[0], true, nil
 }
 
 // Op5 jumps the pointer if first arg is non-zero
@@ -115,9 +115,9 @@ func NewOp5(argLen int64, argModes []int64) *Op5 {
 }
 
 // Compute jumps the pointer to the new position
-func (op *Op5) Compute(pc *Computer, input int64) (int64, error) {
+func (op *Op5) Compute(pc *Computer, input int64) (int64, bool, error) {
 	if err := checkMemoryRange(pc, op.ArgLen); err != nil {
-		return 0, err
+		return 0, false, err
 	}
 	args := calculateArgModes(op.ArgLen, op.ArgModes, pc.ptr, pc.Memory)
 	if args[0] != 0 {
@@ -125,7 +125,7 @@ func (op *Op5) Compute(pc *Computer, input int64) (int64, error) {
 	} else {
 		pc.ptr += op.ArgLen + 1
 	}
-	return 0, nil
+	return 0, false, nil
 }
 
 // Op6 jumps the pointer if first arg is zero
@@ -143,9 +143,9 @@ func NewOp6(argLen int64, argModes []int64) *Op6 {
 }
 
 // Compute jumps the pointer to the new position
-func (op *Op6) Compute(pc *Computer, input int64) (int64, error) {
+func (op *Op6) Compute(pc *Computer, input int64) (int64, bool, error) {
 	if err := checkMemoryRange(pc, op.ArgLen); err != nil {
-		return 0, err
+		return 0, false, err
 	}
 	args := calculateArgModes(op.ArgLen, op.ArgModes, pc.ptr, pc.Memory)
 	if args[0] == 0 {
@@ -153,7 +153,7 @@ func (op *Op6) Compute(pc *Computer, input int64) (int64, error) {
 	} else {
 		pc.ptr += op.ArgLen + 1
 	}
-	return 0, nil
+	return 0, false, nil
 }
 
 // Op7 is the less than operator
@@ -171,9 +171,9 @@ func NewOp7(argLen int64, argModes []int64) *Op7 {
 }
 
 // Compute sets its write pointer to 1 if arg 0 is less than arg 1
-func (op *Op7) Compute(pc *Computer, input int64) (int64, error) {
+func (op *Op7) Compute(pc *Computer, input int64) (int64, bool, error) {
 	if err := checkMemoryRange(pc, op.ArgLen); err != nil {
-		return 0, err
+		return 0, false, err
 	}
 	args := calculateArgModes(op.ArgLen, op.ArgModes, pc.ptr, pc.Memory)
 	if args[0] < args[1] {
@@ -182,7 +182,7 @@ func (op *Op7) Compute(pc *Computer, input int64) (int64, error) {
 		pc.Memory[pc.Memory[pc.ptr+3]] = 0
 	}
 	pc.ptr += op.ArgLen + 1
-	return 0, nil
+	return 0, false, nil
 }
 
 // Op8 is the equals operator
@@ -200,9 +200,9 @@ func NewOp8(argLen int64, argModes []int64) *Op8 {
 }
 
 // Compute sets its write pointer to 1 if arg 0 equals arg 1
-func (op *Op8) Compute(pc *Computer, input int64) (int64, error) {
+func (op *Op8) Compute(pc *Computer, input int64) (int64, bool, error) {
 	if err := checkMemoryRange(pc, op.ArgLen); err != nil {
-		return 0, err
+		return 0, false, err
 	}
 	args := calculateArgModes(op.ArgLen, op.ArgModes, pc.ptr, pc.Memory)
 	if args[0] == args[1] {
@@ -211,7 +211,7 @@ func (op *Op8) Compute(pc *Computer, input int64) (int64, error) {
 		pc.Memory[pc.Memory[pc.ptr+3]] = 0
 	}
 	pc.ptr += op.ArgLen + 1
-	return 0, nil
+	return 0, false, nil
 }
 
 // Op99 is the halt operation
@@ -225,9 +225,9 @@ func NewOp99() *Op99 {
 }
 
 // Compute terminates the program
-func (op *Op99) Compute(pc *Computer, input int64) (int64, error) {
+func (op *Op99) Compute(pc *Computer, input int64) (int64, bool, error) {
 	pc.Halted = true
-	return 0, nil
+	return 0, false, nil
 }
 
 func checkMemoryRange(pc *Computer, argLen int64) error {
