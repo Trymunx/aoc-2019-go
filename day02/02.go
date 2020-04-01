@@ -9,7 +9,7 @@ func Part1() int64 {
 	input := intcode.LoadFromFile("day02/input.txt")
 
 	// Initialise an incode computer with pointer at position 0
-	computer := intcode.NewComputer(input, 0, false)
+	computer := intcode.NewComputer(input)
 
 	// day 2 part 1 says to replace value at position 1 with 12 and position 2 with 2
 	computer.Memory[1] = 12
@@ -28,7 +28,7 @@ func Part2() int {
 
 	for noun := 0; noun < 99; noun++ {
 		for verb := 0; verb < 99; verb++ {
-			computer := intcode.NewComputer(append([]int64{}, input...), 0, false)
+			computer := intcode.NewComputer(append([]int64{}, input...))
 			computer.Memory[1] = int64(noun)
 			computer.Memory[2] = int64(verb)
 			for !computer.Halted {

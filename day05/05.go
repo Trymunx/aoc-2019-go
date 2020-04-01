@@ -10,7 +10,7 @@ func Part1() int64 {
 	input := intcode.LoadFromFile("day05/input.txt")
 
 	// Initialise an incode computer with pointer at position 0
-	computer := intcode.NewComputer(input, 0, false)
+	computer := intcode.NewComputer(input)
 
 	var diagnosticCode int64
 
@@ -34,7 +34,7 @@ func Part2() int64 {
 	input := intcode.LoadFromFile("day05/input.txt")
 
 	// Initialise an incode computer with pointer at position 0
-	computer := intcode.NewComputer(input, 0, false)
+	computer := intcode.NewComputer(input)
 
 	var diagnosticCode int64
 

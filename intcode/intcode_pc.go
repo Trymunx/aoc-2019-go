@@ -60,8 +60,8 @@ type Computer struct {
 }
 
 // NewComputer returns an instance of a new intcode computer
-func NewComputer(memory []int64, ptr int64, halted bool) *Computer {
-	return &Computer{memory, ptr, halted}
+func NewComputer(memory []int64) *Computer {
+	return &Computer{memory, 0, false}
 }
 
 // Step does the next computation and moves the pointer forward.
